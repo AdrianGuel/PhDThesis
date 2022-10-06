@@ -36,6 +36,23 @@ grid(ax4,'on')
 xlabel(ax4,'$t$','Interpreter','Latex','FontSize', 14)
 ylabel(ax4,'$\Sigma_{12}(t)$','Interpreter','Latex','FontSize', 14)
 
+fig2=figure('visible','on');
+set(fig2, 'Position',  [615,328,800,354])
+set(gcf,'color','w');
+axa = subplot(1,2,1);
+hold(axa,'on')
+grid(axa,'on')
+xlabel(axa,'$t$','Interpreter','Latex','FontSize', 14)
+ylabel(axa,'$\Gamma(t)$','Interpreter','Latex','FontSize', 14)
+axis(axa,'square')
+%view(ax1,3)
+
+axb = subplot(1,2,2);
+hold(axb,'on')
+grid(axb,'on')
+xlabel(axb,'$t$','Interpreter','Latex','FontSize', 14)
+ylabel(axb,'$\mathcal{L}(t)$','Interpreter','Latex','FontSize', 14)
+
 y0=[5;1;1e-2;0;1e-2];
 D=[0,0;0,1e-2];
 g=9.81;
@@ -58,7 +75,17 @@ G=zeros(1,length(t));
     end
 plot(ax1,M(1,:),M(2,:),'k')
 
-
+dm1=gradient(L(:,1),t);
+dm2=gradient(L(:,2),t);
+ds11=gradient(L(:,3),t);
+ds12=gradient(L(:,4),t);
+ds22=gradient(L(:,5),t);
+s11=L(:,3);
+s12=L(:,4);
+s22=L(:,5);
+G=Gamma(dm1,dm2,ds11,ds12,ds22,s11,s12,s22);
+plot(axa,t,G,'k')
+plot(axb,t,cumtrapz(t,G),'k')
 function dydt=LaplacianA(t,y,g,L,b,m,D)
     dydt = zeros(5,1);
     dydt(1)=y(2);
@@ -66,4 +93,10 @@ function dydt=LaplacianA(t,y,g,L,b,m,D)
     dydt(3)=2*D(1,1) + 2*y(4);
     dydt(4)=2*D(1,2) + y(5)-(g*y(3)*cos(y(1)))/L-b*y(4)/m;
     dydt(5)=2*D(2,2) - 2*(g*y(4)*cos(y(1)))/L-2*b*y(5)/m;
+end
+
+function val=Gamma(dm1,dm2,ds11,ds12,ds22,s11,s12,s22)
+val=(1./(2*(s12.^2-s11.*s22).^2)).*(ds22.^2.*s11.^2+2.*ds22.*s12.*(-2*ds12.*s11+ds11.*s12) ...
+    +2*s12.^2.*(ds12.^2+dm2.*(-dm2.*s11+2.*dm1.*s12))+2.*(s11.*(ds12.^2+dm2.^2.*s11) ...
+    -2*(ds11.*ds12+dm1.*dm2.*s11).*s12-dm1.^2.*s12.^2).*s22+(ds11.^2+2*dm1.^2.*s11).*s22.^2);
 end
